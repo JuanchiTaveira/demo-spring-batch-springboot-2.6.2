@@ -1,6 +1,7 @@
 package org.example.config;
 
-import org.example.postgresql.entity.Student;
+import org.example.mysql.entity.StudentMysql;
+import org.example.postgresql.entity.StudentPostgres;
 import org.example.processor.StudentItemProcessor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -58,8 +59,8 @@ public class SampleJob {
 	}
 	
 	private Step firstStudentMigrationStep() {
-		return stepBuilderFactory.get("first Student Migration Step")
-				.<Student, org.example.mysql.entity.Student>chunk(3)
+		return stepBuilderFactory.get("first StudentPostgres Migration Step")
+				.<StudentPostgres, StudentMysql>chunk(3)
 				.reader(jpaPagingItemReader())
 				.processor(studentItemProcessor)
 				.writer(jpaItemWriter())
@@ -72,19 +73,19 @@ public class SampleJob {
 				.build();
 	}
 	
-	public JpaPagingItemReader<Student> jpaPagingItemReader() {
-		JpaPagingItemReader<Student> jpaPagingItemReader =
+	public JpaPagingItemReader<StudentPostgres> jpaPagingItemReader() {
+		JpaPagingItemReader<StudentPostgres> jpaPagingItemReader =
 				new JpaPagingItemReader<>();
 		
 		jpaPagingItemReader.setEntityManagerFactory(postgresqlEntityManagerFactory);
 		
-		jpaPagingItemReader.setQueryString("Select s From Student s");
+		jpaPagingItemReader.setQueryString("Select s From StudentPostgres s");
 		
 		return jpaPagingItemReader;
 	}
 	
-	public JpaItemWriter<org.example.mysql.entity.Student> jpaItemWriter() {
-		JpaItemWriter<org.example.mysql.entity.Student> jpaItemWriter = 
+	public JpaItemWriter<StudentMysql> jpaItemWriter() {
+		JpaItemWriter<StudentMysql> jpaItemWriter = 
 				new JpaItemWriter<>();
 		
 		jpaItemWriter.setEntityManagerFactory(mysqlEntityManagerFactory);
