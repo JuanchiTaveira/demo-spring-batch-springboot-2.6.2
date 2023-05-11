@@ -1,7 +1,6 @@
 package org.example.config;
 
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
+import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,6 +11,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfig {
@@ -30,6 +31,7 @@ public class DatabaseConfig {
 	}
 	
 	@Bean
+	@Primary
 	public EntityManagerFactory postgresqlEntityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean lem = 
 				new LocalContainerEntityManagerFactoryBean();

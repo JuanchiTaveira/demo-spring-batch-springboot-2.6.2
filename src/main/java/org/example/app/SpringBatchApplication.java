@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@EnableBatchProcessing
 @ComponentScan({"org.example.config", "org.example.listener", 
 	"org.example.reader", "org.example.processor", 
 	"org.example.writer", "org.example.listener"})

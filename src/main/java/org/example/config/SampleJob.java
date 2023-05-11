@@ -4,9 +4,10 @@ import org.example.postgresql.entity.Student;
 import org.example.processor.StudentItemProcessor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,51 +16,46 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 @Configuration
 public class SampleJob {
 
 	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-	
-	@Autowired
 	private StudentItemProcessor studentItemProcessor;
-	
+
 	@Autowired
 	@Qualifier("universitydatasource")
 	private DataSource universitydatasource;
-	
+
 	@Autowired
 	@Qualifier("postgresdatasource")
 	private DataSource postgresdatasource;
-	
+
 	@Autowired
 	@Qualifier("postgresqlEntityManagerFactory")
 	private EntityManagerFactory postgresqlEntityManagerFactory;
-	
+
 	@Autowired
 	@Qualifier("mysqlEntityManagerFactory")
 	private EntityManagerFactory mysqlEntityManagerFactory;
-	
+
 	@Autowired
 	private JpaTransactionManager jpaTransactionManager;
 
 	@Bean
-	public Job studentMigrationJob() {
-		return jobBuilderFactory.get("student migration job")
+	public Job studentMigrationJob(Step step, JobRepository jobRepository) {
+		return new JobBuilder("studentMigrationJob", jobRepository)
 				.incrementer(new RunIdIncrementer())
-				.start(firstStudentMigrationStep())
+				.start(step)
 				.build();
 	}
-	
-	private Step firstStudentMigrationStep() {
-		return stepBuilderFactory.get("first Student Migration Step")
-				.<Student, org.example.mysql.entity.Student>chunk(3)
+
+	@Bean
+	public Step firstStudentMigrationStep(JobRepository jobRepository) {
+		return new StepBuilder("firstStudentMigrationStep", jobRepository)
+				.<Student, org.example.mysql.entity.Student>chunk(3, jpaTransactionManager)
 				.reader(jpaPagingItemReader())
 				.processor(studentItemProcessor)
 				.writer(jpaItemWriter())
@@ -68,7 +64,6 @@ public class SampleJob {
 				.skipLimit(100)
 				.retryLimit(3)
 				.retry(Throwable.class)
-				.transactionManager(jpaTransactionManager)
 				.build();
 	}
 	
